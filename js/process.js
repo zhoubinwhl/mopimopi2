@@ -5,10 +5,11 @@ var lastDPS = null,
 var barSize = new Array(),
     encounterArray = new Array(),
     encounterCount = 1;
-
+   
 function onOverlayDataUpdate(e) {
     lastDPS = lastCombat
     lastHPS = new Combatant(e, 'enchps');
+    console.log(lastDPS);
     if (view != 'settings') {
         if (!firstCombat) {
             $('[name=notice], [name=history]').fadeOut(0)
@@ -63,18 +64,15 @@ function update(lastDPS, lastHPS) {
         var rd = "RD " + addComma(lastDPS.Encounter.ENCDPS) + "　"
         var rh = "RH " + addComma(lastHPS.Encounter.ENCHPS) + "　"
         var rk = "Rank " + parseInt(lastDPS.Combatant.YOU.rank + 1) + "/" + parseInt(lastHPS.Combatant.YOU.rank + 1) + "/" + lastDPS.partys + "　"
-
-        if (init.q.swap == 0)
-            var max = '<span name="swapBtn">MaxHit&nbsp;</span>' + addData('MaxHit', null, lastDPS.Combatant.YOU).replace('<font class="ex">', '').replace("</font>", '') + '　</span>'
-        else
-            var max = '<span name="swapBtn">MaxHeal&nbsp;</span>' + addData('MaxHeal', null, lastHPS.Combatant.YOU).replace('<font class="ex">', '').replace("</font>", '') + '　</span>'
-
         var msg = ''
-
+        if (init.q.swap == 0)
+            var max = '<span name="swapBtn">MaxHit </span>' + addData('MaxHit', null, lastDPS.Combatant.YOU).replace('<font class="ex">', '').replace("</font>", '')
+        else
+            var max = '<span name="swapBtn">MaxHeal </span>' + addData('MaxHeal', null, lastHPS.Combatant.YOU).replace('<font class="ex">', '').replace("</font>", '')
         if (init.q.act_rd) msg += rd
         if (init.q.act_rh) msg += rh
         if (init.q.act_rank) msg += rk
-        if (init.q.act_max) msg += max
+        if (init.q.act_max) msg += max.replace('<font class="ex">', '').replace("</font>", '')
 
         $('[name=rps]').html(msg)
 
@@ -120,7 +118,7 @@ function onRaidCombatDataUpdate(flag, last) {
         for (var d in last.persons) {
             var a = last.persons[d];
             var userName = a.name.replace(/ /g, "").replace("(", "").replace(")", "").replace(/'/g, "_");
-            if (init.q.pets == 1 && a.Job == 'AVA' || a.Class == '') { } else {
+            if (init.q.pets == 1 && a.Job == "AVA" || a.Class == '') { } else {
                 if (flag == "HPS") {
                     if (init.q.HPS_T == 1 && a.role == 'Tanker' || init.q.HPS_H == 1 && a.role == 'Healer' || init.q.HPS_D == 1 && a.role == 'DPS' || init.q.HPS_C == 1 && a.Job == 'CBO' || init.q.HPS_M == 1 && a.role == 'Crafter' || init.q.HPS_M == 1 && a.role == 'Gathering') {
                         if (set <= init.Range.size24TableSlice) {
@@ -175,7 +173,7 @@ function onCombatDataUpdate(flag, last) {
         for (var d in last.persons) {
             var a = last.persons[d];
             var userName = a.name.replace(/ /g, "").replace("(", "").replace(")", "").replace(/'/g, "_");
-            if (init.q.pets == 1 && a.Job == 'AVA' || a.Class == '') { } else {
+            if (init.q.pets == 1 && a.Job == "AVA" || a.Class == '') { } else {
                 var bodyHeight = parseInt(init.Range.sizeBody) + parseInt(init.Range.sizeLine)
                 if (flag == "HPS") {
                     if (init.q.HPS_T == 1 && a.role == 'Tanker' || init.q.HPS_H == 1 && a.role == 'Healer' || init.q.HPS_D == 1 && a.role == 'DPS' || init.q.HPS_C == 1 && a.Job == 'CBO' || init.q.HPS_M == 1 && a.role == 'Crafter' || init.q.HPS_M == 1 && a.role == 'Gathering') {
@@ -204,7 +202,7 @@ function onCombatDataUpdate(flag, last) {
         for (var d in last.persons) {
             var a = last.persons[d];
             var userName = a.name.replace(/ /g, "").replace("(", "").replace(")", "").replace(/'/g, "_");
-            if (init.q.pets == 1 && a.Job == 'AVA' || a.Class == '') { } else
+            if (init.q.pets == 1 && a.Job == "AVA" || a.Class == '') { } else
                 inputGraph(userName, flag, a.parent.maxdamage, a)
         }
     }
@@ -250,12 +248,13 @@ function createTableBody(userName, flag, newBody, a) {
     var miniBar = document.createElement("div");
     miniBar.className = "mini";
 
-    if ((a.Class == "SMN" || a.Class == "MCH" || a.Class == "ACN") && init.q.bar_pet == 1) {
-        var bar1 = document.createElement("div");
-        bar1.className = "pet";
-        miniBar.appendChild(bar1);
-    }
-    if (flag == "HPS") {
+   if (flag == "DPS") {
+        if (init.q.bar_pet == 1) {
+            var bar1 = document.createElement("div");
+            bar1.className = "pet";
+            miniBar.appendChild(bar1);
+        }
+    } else {
         if (init.q.bar_oh == 1) {
             var bar1 = document.createElement("div");
             bar1.className = "oh";
@@ -266,7 +265,7 @@ function createTableBody(userName, flag, newBody, a) {
             bar2.className = "ds";
             miniBar.appendChild(bar2);
         }
-        if (a.Class == "SCH" && init.q.bar_pet == 1) {
+        if (init.q.bar_pet == 1) {
             var bar3 = document.createElement("div");
             bar3.className = "pet";
             miniBar.appendChild(bar3);
@@ -278,11 +277,9 @@ function createTableBody(userName, flag, newBody, a) {
     newBody.appendChild(wrap)
 }
 
-function cutName(name) {
+function printName(name) {
     var tmp = name.split(' ');
-    if (tmp.length == 1) {
-        return name
-    } else {
+    if (tmp.length >= 2) {
         if (init.q.cnt == 1)
             return name
         else if (init.q.cnt == 2)
@@ -291,6 +288,22 @@ function cutName(name) {
             return tmp[0].substr(0, 1) + '. ' + tmp[1]
         else
             return tmp[0].substr(0, 1) + '. ' + tmp[1].substr(0, 1) + '.'
+    } else
+        return name
+}
+function cutName(name) {
+    if (name.indexOf("(") > -1) {
+        var tmp = name.split('(');
+        var cn = tmp[1].substr(0, tmp[1].length - 1)
+        if (myName == "")   
+            myName = 'YOU'        
+        if(init.q.myName == false && cn == "YOU")   
+            return tmp[0] + ' (' + printName(myName) + ')'
+        else 
+            return tmp[0] + ' (' + printName(cn) + ')'
+    }
+    else {      
+        return printName(name)
     }
 }
 function petName(job, name) {
@@ -307,29 +320,23 @@ function petName(job, name) {
 function addData(colName, a, p) {
     switch (colName) {
         case 'Job':
-            if(a != undefined) return '<img src="./images/icon/' + init.q.iconSet + '/' + p.Job.toUpperCase() + '.png"/>';
+            if (a != undefined)
+                return '<img src="./images/icon/' + init.q.iconSet + '/' + p.Job.toUpperCase() + '.png"/>';
             else return ''
         case 'Name':
             var name = ''
             if (init.q.hideName == false) {
-                if (a == "YOU" && init.q.myName == false){
-                    if(myName != '')
+                if (a == "YOU" && init.q.myName == false) {
+                    if (myName != '')
                         name = cutName(myName);
                     else
                         name = a
                 }
                 else {
                     if ((p.petOwner == myName || p.petOwner == 'YOU') && p.petOwner != '' && init.q.myName == true)
-                        name = petName(p.Job, a)                    
-                    else{
-                        if(a == "Eos (YOU)"){
-                            if(myName == "")
-                                name = a
-                            else
-                                name = 'Eos (' + myName + ')'
-                        }
-                        else
-                            name = cutName(a);
+                        name = petName(p.Job, a)
+                    else {
+                        name = cutName(a);
                     }
                 }
             }
@@ -483,16 +490,12 @@ function inputGraph(userName, flag, maxDamage, p) {
     })
     if (init.q.pets == 1) {
         if (flag == 'DPS') {
-            if (p.Class == "MCH" || p.Class == "SMN" || p.Class == "ACN") {
-                var petWidth = Math.min(100, parseInt((p.mergedDamage - p.damage) / maxDamage * 100))
-                graphAnimate(petWidth, 'pet', flag, userName, 'pet')
-            }
+            var petWidth = Math.min(100, parseInt((p.mergedDamage - p.damage) / maxDamage * 100))
+            graphAnimate(petWidth, 'pet', flag, userName, 'pet')
         } else {
-            if (p.Class == "SCH") {
-                var fairyEffHeal = parseInt(p.mergedEffHealed - p.effHealed)
-                var petWidth = Math.min(100, parseInt((fairyEffHeal / maxDamage) * 100))
-                graphAnimate(petWidth, 'pet', flag, userName, 'pet')
-            }
+            var fairyEffHeal = parseInt(p.mergedEffHealed - p.effHealed)
+            var petWidth = Math.min(100, parseInt((fairyEffHeal / maxDamage) * 100))
+            graphAnimate(petWidth, 'pet', flag, userName, 'pet')
             graphAnimate(shield, 'ds', flag, userName, 'ds')
             graphAnimate(overheal, 'oh', flag, userName, 'oh')
         }
@@ -559,9 +562,12 @@ function graphColor(job, role, userName) {
             if (init.q.myColorUse == 1 && userName.indexOf("YOU") > -1 && job != "ds" && job != "oh" && job != "pet")
                 return '#' + init.Color.myColor
             else {
-                if (role != undefined || role != null)
-                    return '#' + init.Color[role]
-                else
+                if (role != undefined || role != null){
+                    if(job == "LMB")
+                        return '#' + init.Color[job]
+                    else
+                        return '#' + init.Color[role]
+                }else
                     return '#' + init.Color[job]
             }
         case "meYou":
